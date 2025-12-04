@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>TaskBoard</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .task-input { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 10px; }
+        button { padding: 10px; cursor: pointer; }
+        ul { list-style: none; padding: 0; }
+        li { background: #f4f4f4; margin: 5px 0; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        li.completed span { text-decoration: line-through; color: gray; }
+        .delete-btn { background: #ff4d4d; color: white; border: none; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Lista zadań (TaskBoard)</h1>
+    <div class="task-input">
+        <input type="text" id="task-title" placeholder="Nowe zadanie...">
+        <button onclick="addTask()">Dodaj</button>
+    </div>
+    <ul id="task-list">
+        </ul>
+    <script>
+        async function loadTasks() {
+            const response = await fetch('/taskboard/api/tasks/');
+            const data = await response.json();
+            const list = document.getElementById('task-list');
+            list.innerHTML = ''; 
+            data.tasks.forEach(task => {
+                renderTask(task);
+            });
+        }
+
+        
+        function renderTask(task) {
+            const list = document.getElementById('task-list');
+            const li = document.createElement('li');
+            if (task.completed) li.classList.add('completed');
+            li.innerHTML = `
+                <span onclick="toggleTask(${task.id}, ${!task.completed})" style="cursor:pointer; flex-grow:1;">
+                    ${task.title}
+                </span>
+                <button class="delete-btn" onclick="deleteTask(${task.id})">X</button>
+            `;
+            list.appendChild(li);
+        }
+
+        
+        async function addTask() {
+            const input = document.getElementById('task-title');
+            const title = input.value;
+            if (!title) return;
+
+            const response = await fetch('/taskboard/api/tasks/', {
+                method: 'POST',
+                body: JSON.stringify({ title: title })
+            });
+            
+            if (response.ok) {
+                const newTask = await response.json();
+                renderTask(newTask); 
+                input.value = '';   
+            }
+        }
+
+        
+        async function toggleTask(id, newStatus) {
+            await fetch(`/taskboard/api/tasks/${id}/`, {
+                method: 'PATCH',
+                body: JSON.stringify({ completed: newStatus })
+            });
+            loadTasks(); 
+        }
+
+        
+        async function deleteTask(id) {
+            if(!confirm("Usunąć zadanie?")) return;
+            
+            await fetch(`/taskboard/api/tasks/${id}/`, {
+                method: 'DELETE'
+            });
+            loadTasks(); 
+        }
+
+        
+        loadTasks();
+    </script>
+
+</body>
+</html>
