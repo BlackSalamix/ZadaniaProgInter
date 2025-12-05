@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'frontend_demo',
     'visitcounter',
     'taskboard',
+    'daily_quiz',
 ]
 
 MIDDLEWARE = [

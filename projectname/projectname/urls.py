@@ -22,5 +22,6 @@ urlpatterns = [
     path("", include("witaj.urls")),
     path("", include("frontend_demo.urls")),
     path('visitcounter/', include('visitcounter.urls')),
-    path('taskboard/', include('taskboard.urls'))
+    path('taskboard/', include('taskboard.urls')),
+    path('quiz/', include('daily_quiz.urls'))
 ]
